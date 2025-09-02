@@ -1,0 +1,594 @@
+{
+  "name": "socialmedi_dev",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2000,
+        -900
+      ],
+      "id": "73df948f-2f77-4040-8b29-4b3c60a32268",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1480,
+        -900
+      ],
+      "id": "fba7929e-a8d5-4c88-af5f-55b63648992e",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        -1300,
+        -900
+      ],
+      "id": "fdf516ad-43b3-4947-9a28-e579747719b1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.title }}\n{{ $json.text }}",
+        "options": {
+          "systemMessage": "=Create a 1080x1080 square LinkedIn carousel slide.\n\nBackground:\n\nUse a professionally styled, creative background that reflects the main theme, season, or concept from the {{ $json.title }} and {{ $json.text }}.\n\nFor financial/neutral topics: use a multi-tone blue gradient blending 2–3 complementary shades for a modern, premium look.\n\nFor seasonal or event-based topics: adapt colors, patterns, and scene elements to subtly match the context (e.g., beach tones for summer, warm cozy tones for winter, celebratory lights for festive content, greenery for growth themes).\n\nKeep it subtle, business-appropriate, and modern.\n\nLayout:\n\nTop-left corner: brand name WALLETGYDE — “WALLET” in lime green, “GYDE” in sky blue — in a bold, clean sans-serif font.\n\nLeft side text block:\n\nTitle: {{ $json.title }} — large, bold, in a color that strongly contrasts with the background for maximum readability.\n\nText: {{ $json.text }} — smaller, regular weight, in a different but complementary high-contrast color from the title to create visual separation.\n\nEnsure generous padding and clear spacing between title and text.\n\nRight side visual:\n\nA modern, minimal-yet-detailed illustration that aligns with the theme derived from {{ $json.title }} and {{ $json.text }}.\n\nFor finance-focused posts: confident person reviewing budget, symbolic graphs, money flow, investment visuals.\n\nFor seasonal/event themes: blend the finance visuals with context-appropriate elements (e.g., budgeting at a beach café, reviewing expenses beside festive decorations, planning growth with spring flowers).\n\nAvoid generic stock-style icons or cliché piggy banks unless contextually relevant.\n\nOverall style:\n\nMinimal, professional, balanced, with premium-grade illustration quality.\n\nEnsure title and text colors are auto-adjusted for maximum contrast against the background."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -100,
+        -900
+      ],
+      "id": "d9cb768f-f38e-4ca9-9a7a-59f76241af31",
+      "name": "image prompt generator"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -260,
+        -400
+      ],
+      "id": "c62d8ff9-6a50-476f-afb1-950218e6b954",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "IE7VaYDb0bDEeL6t",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data[0].b64_json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        440,
+        -900
+      ],
+      "id": "d86ec596-1ee4-4a72-aaa4-53ecfb8910fd",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "1bRhwuMlL0Pjit8zkNGnU4tN5O73fx7e5zqOrj3XDMAk"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -1820,
+        -900
+      ],
+      "id": "e124edf0-d956-410e-b0c6-9ac912819ec9",
+      "name": "Aug content",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "I0LtNNoXnTJFqGbb",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.content;\n\n// Helper function to extract section by label\nfunction extractSection(label, text) {\n  const regex = new RegExp(label + '\\\\s*:\\\\s*([\\\\s\\\\S]*?)(?=(\\\\n\\\\w+\\\\s*:|$))', 'i');\n  const match = text.match(regex);\n  return match ? match[1].trim() : '';\n}\n\n// Extract all sections\nconst platform = extractSection('Platform', text);\nconst postTitle = extractSection('Post Title', text);\nconst dataFocus = extractSection('Data Focus', text);\nconst quote = extractSection('Quote', text);\nconst summary = extractSection('Summary', text);\nconst visuals = extractSection('Visuals', text);\nconst advice = extractSection('Advice', text);\nconst cta = extractSection('CTA', text);\n\nreturn [{\n  json: {\n    platform,\n    postTitle,\n    dataFocus,\n    quote,\n    summary,\n    visuals,\n    advice,\n    cta,\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        -900
+      ],
+      "id": "b2371c2d-cda1-422b-b8d4-abf324baf99a",
+      "name": "Further_splitting_tosubsections",
+      "notesInFlow": true,
+      "notes": "Further_splitting_tosubsections"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo-16k",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO-16K"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Using the details below, write a LinkedIn post of about 200 words. The tone should be warm, friendly, and easy to understand—like an expert sharing helpful advice with friends.\n\nStart with a simple question or statement about summer spending habits that people can relate to.\n\nGive one practical tip that encourages smart spending or saving.\n\nInclude this quote by Morgan Housel in a natural way:\n\"Spending should reflect your identity — not your social comparison.\"\n\nEnd with a clear call to action asking readers to download a Personal Economy PDF to check if their lifestyle matches their long-term goals.\n\nAdd a few relevant hashtags about money, smart spending, and lifestyle.\n\nDetails:\nTitle: {{ $json.postTitle }}\nData Focus: {{ $json.dataFocus }}\nQuote: {{ $json.quote }}\nSummary: {{ $json.summary }}\nAdvice: {{ $json.advice }}\nCall to Action: {{ $json.cta }}\n\nMake sure the post sounds real and easy to read, like a helpful conversation on LinkedIn."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -780,
+        -900
+      ],
+      "id": "72f93165-6629-4d58-8239-f6063b85b711",
+      "name": "content generation",
+      "credentials": {
+        "openAiApi": {
+          "id": "IE7VaYDb0bDEeL6t",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer $OPENAI_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-image-1"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $json.output }}"
+            },
+            {
+              "name": "size",
+              "value": "1024x1024"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        -900
+      ],
+      "id": "745caf39-6ba7-46f4-9bbf-71a09675fc9f",
+      "name": "Gpt-image_Api_call",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0xwbMeJe2aLHl98B",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.content }}",
+        "options": {
+          "systemMessage": "=You are a LinkedIn carousel creator.\nYou will receive post content as input.\nYour task:\n\nCreate JSON output with a \"slides\" array.\n\nMaximum 1 slide.\n\nEach slide must contain:\n\n\"title\": Short, catchy headline (max ~6 words).\n\n\"text\": Short, clear summary (max ~2 short sentences) that delivers the core message.\n\nPreserve any quotes exactly as written in the original content.\n\nKeep language image-friendly—avoid long paragraphs or excessive details.\n\nInclude a concise call-to-action if present in the original content.\n\nOutput only the JSON. No explanations, no extra commentary."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -600,
+        -900
+      ],
+      "id": "003c0971-1f57-4744-9dca-fa257bee73f0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $json.output;\n\ntry {\n  // Ensure string\n  if (typeof raw !== 'string') raw = String(raw);\n\n  // Strip Markdown code fences if present\n  raw = raw.replace(/```json/i, '')\n           .replace(/```/g, '')\n           .trim();\n\n  // If parsing fails due to extra wrapper text, try extracting the first {...} block\n  let parsed;\n  try {\n    parsed = JSON.parse(raw);\n  } catch (_) {\n    const start = raw.indexOf('{');\n    const end = raw.lastIndexOf('}');\n    if (start !== -1 && end !== -1 && end > start) {\n      parsed = JSON.parse(raw.slice(start, end + 1));\n    } else {\n      throw _;\n    }\n  }\n\n  // Validate structure\n  if (!parsed.slides || !Array.isArray(parsed.slides)) {\n    throw new Error(\"No 'slides' array found in parsed content.\");\n  }\n\n  // Map each slide into a new item\n  return parsed.slides.map((slide) => {\n    // Prefer \"text\", but allow common fallbacks\n    const combinedText = [\n      slide.text ?? slide.content ?? slide.body ?? slide.description ?? '',\n      slide.call_to_action ?? slide.cta ?? ''\n    ]\n    .filter(Boolean)\n    .join(' ')\n    .trim();\n\n    return {\n      json: {\n        title: (slide.title ?? '').trim(),\n        text: combinedText\n      }\n    };\n  });\n\n} catch (err) {\n  throw new Error(\"Failed to parse slide content: \" + err.message);\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        -900
+      ],
+      "id": "d90f66ec-66e0-4917-bdd8-5d89d2073bf3",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "name": "={{ $('splitting_week').item.json.week }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1tI1CCdqtU1Q_kYC7pDiBMBzgmGUcqpaq",
+          "mode": "list",
+          "cachedResultName": "images",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1tI1CCdqtU1Q_kYC7pDiBMBzgmGUcqpaq"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        640,
+        -900
+      ],
+      "id": "f66a74a3-8a1d-425c-ad3e-36b6442845bd",
+      "name": "Google Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "jOm29UNjgjDsXfoK",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "12UvkB3v0WDckDM2vPFDfW39MnT92ABiB2d209SQ1NkA",
+          "mode": "list",
+          "cachedResultName": "contentinfo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12UvkB3v0WDckDM2vPFDfW39MnT92ABiB2d209SQ1NkA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12UvkB3v0WDckDM2vPFDfW39MnT92ABiB2d209SQ1NkA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "imageid": "={{ $json.webViewLink }}",
+            "content": "={{ $('content generation').item.json.message.content }}",
+            "week": "={{ $('splitting_week').item.json.week }}",
+            "Datepost": "={{ $('splitingdate').item.json.start_iso }}"
+          },
+          "matchingColumns": [
+            "week"
+          ],
+          "schema": [
+            {
+              "id": "week",
+              "displayName": "week",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "imageid",
+              "displayName": "imageid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Datepost",
+              "displayName": "Datepost",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        820,
+        -900
+      ],
+      "id": "52bbec89-a04f-4dca-8427-bcca4758f4fe",
+      "name": "Google Sheets",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "360oiH82XdYz351A",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ----- config -----\nconst YEAR = 2025; // change to new Date().getFullYear() if you want current year\n// ------------------\n\nconst MONTH = {\n  january:'01', february:'02', march:'03', april:'04', may:'05', june:'06',\n  july:'07', august:'08', september:'09', october:'10', november:'11', december:'12'\n};\n\n// Match: \"Month d–d\" OR \"Month d–Month d\"\nconst RE = /\\b(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(\\d{1,2})\\s*[–-]\\s*(?:(January|February|March|April|May|June|July|August|September|October|November|December)\\s*)?(\\d{1,2})/i;\n\nconst pad2 = v => String(v).padStart(2, '0');\n\nreturn items.map(item => {\n  const content = String(item.json.content || '');\n  const m = content.match(RE);\n\n  let dateRange = '';\n  let start_iso = null;\n  let end_iso = null;\n\n  if (m) {\n    const m1 = m[1], d1 = pad2(m[2]);\n    const m2 = m[3] || m1, d2 = pad2(m[4]);\n\n    const ms = MONTH[m1.toLowerCase()];\n    const me = MONTH[m2.toLowerCase()];\n\n    dateRange = `${m1} ${d1}–${m2 !== m1 ? m2 + ' ' : ''}${d2}`;\n    start_iso = `${YEAR}-${ms}-${d1}`;\n    end_iso   = `${YEAR}-${me}-${d2}`;\n  }\n\n  return {\n    json: {\n      ...item.json,\n      dateRange,     // e.g., \"August 05–11\"\n      start_iso,     // e.g., \"2025-08-05\"\n      end_iso        // e.g., \"2025-08-11\"\n    }\n  };\n});\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        -900
+      ],
+      "id": "1634f9e1-aa0b-48b2-bd48-b46d18494605",
+      "name": "splitingdate"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Assuming Google Docs node outputs text in json.content\nconst rawText = $input.item.json.content;\n\n// Split content by \"Week\" keyword to separate weeks\nconst weeks = rawText.split(/Week \\d+/).filter(Boolean);\n\n// Since split removes the \"Week X\" string, recreate week labels\nconst weekData = weeks.map((text, index) => {\n  return {\n    json: {\n      week: `Week ${index + 1}`,\n      content: text.trim()\n    }\n  };\n});\n\nreturn weekData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1640,
+        -900
+      ],
+      "id": "180c4e5e-bcdc-4985-9e0a-59f4c5160956",
+      "name": "splitting_week"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Aug content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "splitingdate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "image prompt generator": {
+      "main": [
+        [
+          {
+            "node": "Gpt-image_Api_call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "image prompt generator",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aug content": {
+      "main": [
+        [
+          {
+            "node": "splitting_week",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Further_splitting_tosubsections": {
+      "main": [
+        [
+          {
+            "node": "content generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "content generation": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gpt-image_Api_call": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "image prompt generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "splitingdate": {
+      "main": [
+        [
+          {
+            "node": "Further_splitting_tosubsections",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "splitting_week": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "3b12e422-2a31-43e5-b5c8-df718e261662",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "531aba5763cbbc4374390361f600fac71c56a6dd488ff4bf579cb63e26f6b301"
+  },
+  "id": "Jd0RfbOIFgNjqDbL",
+  "tags": []
+}
